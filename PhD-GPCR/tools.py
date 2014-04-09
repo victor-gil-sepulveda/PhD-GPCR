@@ -2,6 +2,7 @@ import json
 from pyproct.tools.commonTools import convert_to_utf8
 import numpy
 import os
+import math
 
 
 PYPROCT = "/home/victor/workspaces/Python/pyProClust/pyproct/main.py"
@@ -75,3 +76,7 @@ def normalize_metrics(metrics):
         normalized_metrics.append( (metric_array - m_min) / (m_max - m_min))
     return numpy.array(normalized_metrics).T
 
+
+def distance(first,second):
+    r = first - second
+    return math.sqrt(r[0]*r[0]+r[1]*r[1]+r[2]*r[2])

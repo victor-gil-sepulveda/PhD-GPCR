@@ -1,7 +1,7 @@
 import os
 import os.path
 from scripts.plop.metrics.metrics import processFile, genMetrics
-from scripts.gpcr.plotting import plot_metrics, plot_clusters
+from plotting import plot_metrics, plot_clusters
 from pyproct.clustering.clustering import Clustering
 from pyproct.tools.pdbTools import extract_frames_from_trajectory_sequentially, get_number_of_frames
 from pyRMSD.condensedMatrix import CondensedMatrix
@@ -9,7 +9,7 @@ from pyRMSD.matrixHandler import MatrixHandler
 import scipy.spatial.distance
 import shutil
 
-from scripts.gpcr.tools import load_dic_in_json, save_dic_in_json, use_pyproct,\
+from tools import load_dic_in_json, save_dic_in_json, use_pyproct,\
  normalize_metrics, score_cluster, get_best_clustering, find_most_negative_cluster,\
     find_5_clusters_with_less_energy
 
@@ -27,34 +27,40 @@ data = [
 #              "binding_spawning":["L1(32.5-5.933.7)", "L1BindingEne"]
 #          }
 #     },
-    {
-        'dir':'3p0g',
-        'plots': {
-             "totale_spawning":["L1(63.416.011.9)", "TOTALE"],
-             "binding_spawning":["L1(63.416.011.9)", "L1BindingEne"]
-         }
-    },
-    {
-        'dir':'3oe9',
-        'plots': {
-             "totale_spawning":["L1(63.416.011.9)", "TOTALE"],
-             "binding_spawning":["L1(63.416.011.9)", "L1BindingEne"]
-         }
-    },
-    {
-        'dir':'4gpo',
-        'plots': {
-             "totale_spawning":["L1(63.416.011.9)", "TOTALE"],
-             "binding_spawning":["L1(63.416.011.9)", "L1BindingEne"]
-         }
-    },
+#     {
+#         'dir':'3p0g',
+#         'plots': {
+#              "totale_spawning":["L1(63.416.011.9)", "TOTALE"],
+#              "binding_spawning":["L1(63.416.011.9)", "L1BindingEne"]
+#          }
+#     },
+#     {
+#         'dir':'3oe9',
+#         'plots': {
+#              "totale_spawning":["L1(63.416.011.9)", "TOTALE"],
+#              "binding_spawning":["L1(63.416.011.9)", "L1BindingEne"]
+#          }
+#     },
+#     {
+#         'dir':'4gpo',
+#         'plots': {
+#              "totale_spawning":["L1(63.416.011.9)", "TOTALE"],
+#              "binding_spawning":["L1(63.416.011.9)", "L1BindingEne"]
+#          }
+#     },
 #     {
 #         'dir':'4k5y',
 #         'plots': {
 #              "totale_spawning":["L1(63.416.011.9)", "TOTALE"],
 #              "binding_spawning":["L1(63.416.011.9)", "L1BindingEne"]
 #          }
-#     }
+#     },
+    {
+        'dir':'2rh1',
+        'plots': {
+             "totale_spawning":["L1(63.416.011.9)",  "LigandRMSD"]
+         }
+    },
 ]
 
 cwd = os.getcwd()
