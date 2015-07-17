@@ -1,8 +1,8 @@
-'''
+"""
 Created on 13/03/2014
 
 @author: victor
-'''
+"""
 
 
 import prody
@@ -13,8 +13,6 @@ import pylab
 import os
 from tools import distance, create_dir
 
-
-alpha_atoms_selection = "name CA"
 
 data = [
     {

@@ -1,0 +1,74 @@
+{
+    "global": {
+        "control": {
+            "scheduler_type": "Process/Parallel"
+        },
+        "workspace": {
+            "base": "simos_example"
+        }
+    },
+    "data": {
+        "type": "protein::ensemble",
+        "files": [
+                
+        ],
+        "matrix": {
+            "method": "euclidean_distance::ensemble",
+            "parameters": {
+                "calculator_type": "QCP_SERIAL_CALCULATOR",
+                "fit_selection": "name CA",
+                "calc_selection": "chain C"
+            }
+        }
+    },
+    "clustering": {
+        "generation": {
+            "method": "generate"
+        },
+        "algorithms": {
+            "spectral": {
+                "max": 25,
+                "force_sparse": true
+            },
+            "dbscan": {
+                "max": 25
+            },
+            "gromos": {
+                "max": 15
+            },
+            "kmedoids": {
+                "max": 15
+            },
+            "hierarchical": {}
+        },
+        "evaluation": {
+            "evaluation_criteria": {
+                "criteria_0": {
+                    "Silhouette": {
+                        "action": ">",
+                        "weight": 1
+                    }
+                }
+            },
+            "query_types": [
+                "NumClusters",
+                "NoiseLevel",
+                "MeanClusterSize"
+            ],
+            "maximum_noise": 20,
+            "minimum_cluster_size": 5,
+            "maximum_clusters": 20,
+            "minimum_clusters": 3
+        }
+    },
+    "postprocess": {
+        "representatives": {
+            "keep_remarks": "ALL",
+            "add_source_details": true
+        },
+        "pdb_clusters": {
+            "keep_remarks": "ALL",
+            "add_source_details": true
+        }
+    }
+}
