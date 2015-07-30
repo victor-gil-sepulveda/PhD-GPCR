@@ -13,6 +13,11 @@ import itertools
 
 if __name__ == "__main__":
 
+    # argv
+    # 1 - directory whe
+    # 2 - name of the pdb
+    # 3 - template script for pyProCT
+
     RESULTS_PATH = os.path.join("Results", sys.argv[1], sys.argv[2])
     create_dir(RESULTS_PATH)
 
@@ -25,7 +30,7 @@ if __name__ == "__main__":
     records = processDir(sys.argv[1], sys.argv[2])
     selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(15.360.555.4)' < 6.5 and 'L1(15.360.555.4)' > 1.5", records)
     genSingleTraj(FILTERED_PDB_FILE, records, selection)
-#    genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
+    genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
     metrics = genMetrics(["L1(15.360.555.4)","L1  Binding Ene"], selection).T
   
     #--------------------------------  
