@@ -29,7 +29,7 @@ if __name__ == '__main__':
         fig, ax = plt.subplots()
         ax.set_title(protein)
         
-        THRESHOLD = 0
+        THRESHOLD = 1000
         # filter residues, leave only those that have at least one value higher than a threshold
         all_residue_labels = []
         for drug, values in data[protein]:
@@ -41,18 +41,19 @@ if __name__ == '__main__':
             
         
         n_groups = len(all_residue_labels)
-        index = numpy.arange(n_groups)
-        bar_width = 0.35
+        bar_width = 0.30
+        index = numpy.arange(n_groups) + bar_width/2
         legend_label = []
         for i, (drug, values) in enumerate(data[protein]):
             x = numpy.array([values[res] for res in all_residue_labels])
             print x
             rects = ax.bar(index, x, bar_width, color = colors[i])
-            index += bar_width
+            index = index + bar_width
             legend_label.append(drug)
         
-        ax.autoscale(tight=True)
+        plt.subplots_adjust(bottom=0.16) 
+        #ax.autoscale(tight=True)
         ax.legend( legend_label)
-        ax.set_xticks(numpy.arange(n_groups)+bar_width)
+        ax.set_xticks(numpy.arange(n_groups)+bar_width/2)
         ax.set_xticklabels(all_residue_labels, rotation= 45)
         plt.show()
