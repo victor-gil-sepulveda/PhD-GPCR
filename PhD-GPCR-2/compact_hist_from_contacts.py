@@ -10,10 +10,12 @@ import tools
 from _collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy
+import os
 
 if __name__ == '__main__':
     contacts_file_with_paths = sys.argv[1]
-    results_dir = tools.create_dir(sys.argv[2])
+    results_dir = sys.argv[2]
+    tools.create_dir(results_dir)
     
     handler = open(contacts_file_with_paths,"r")
     
@@ -56,4 +58,5 @@ if __name__ == '__main__':
         ax.legend( legend_label)
         ax.set_xticks(numpy.arange(n_groups)+bar_width/2)
         ax.set_xticklabels(all_residue_labels, rotation= 45)
-        plt.show()
+        plt.savefig("%s.svg"%(os.path.join(results_dir, protein)))
+        #plt.show()
