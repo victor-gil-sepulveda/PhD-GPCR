@@ -2,7 +2,7 @@
     "global": {
         "control": {
             "scheduler_type": "Process/Parallel",
-	    "number_of_processes":7
+	    	"number_of_processes":7
         },
         "workspace": {
             "base": "simos_example"

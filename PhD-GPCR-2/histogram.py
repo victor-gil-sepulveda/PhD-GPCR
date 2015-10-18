@@ -10,6 +10,26 @@ import itertools
 from tools import define_tableau20_cm
 from matplotlib.font_manager import FontProperties
 
+def parse_drug_info(path):
+    num_atoms_per_drug = defaultdict(lambda:None)
+    if path is not None:
+        # Then we also have the number of atoms per drug
+        handler = open(path,"r")
+        for line in handler:
+            parts = line.split()
+            num_atoms_per_drug[parts[0]] = float(parts[1])
+        handler.close()
+    return num_atoms_per_drug
+
+def parse_frames_info(path):
+    handler = open(path,"r")
+    data = defaultdict(dict)
+    for line in handler:
+        drug, protein, num_frames = line.split()
+        data[protein][drug] = float(num_frames)
+    handler.close()
+    return data
+
 def parse_contacts(contacts_file_path):
     with open(contacts_file_path,"r") as contacts_file:
         contacts_per_cluster = {}
@@ -21,7 +41,14 @@ def parse_contacts(contacts_file_path):
                 contacts_per_residue[res] += 1
     return contacts_per_cluster, contacts_per_residue
 
-def count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue_labels, normalize = False):
+def get_num_contacts_per_residue(contacts_per_cluster):
+    contacts_per_residue = defaultdict(int)
+    for cluster_id in contacts_per_cluster:
+        for contact_id in contacts_per_cluster[cluster_id]:
+            contacts_per_residue[contact_id] += 1
+    return contacts_per_residue
+
+def count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue_labels, weight = None, normalize = False):
     cluster_ids = contacts_per_cluster.keys()
     
     contact_to_data_id = dict(zip(contact_residue_labels, range(len(contact_residue_labels))))
@@ -36,6 +63,9 @@ def count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue
                 data[i][j] += 1
             except KeyError:
                 pass # This means we are using a subset of the labels
+    
+    if weight != None:
+        data /= weight
     
     if normalize:
         area = data.sum().sum()
@@ -61,17 +91,10 @@ def filter_less_contacts_than(num_contacts, contact_labels, contacts_per_residue
     
     return filtered_contacts_residue_labels
 
-def get_num_contacts_per_residue(contacts_per_cluster):
-    contacts_per_residue = defaultdict(int)
-    for cluster_id in contacts_per_cluster:
-        for contact_id in contacts_per_cluster[cluster_id]:
-            contacts_per_residue[contact_id] += 1
-    return contacts_per_residue
-    
-def plot_histogram(contacts_per_cluster, contact_residue_labels, histogram_path, normalize = False ):
+def plot_histogram(contacts_per_cluster, contact_residue_labels, histogram_path, weight = None, normalize = False ):
     cluster_ids = contacts_per_cluster.keys()
     
-    data = count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue_labels, normalize)
+    data = count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue_labels, weight, normalize)
     
     # plot data    
     _, ax = pl.subplots()

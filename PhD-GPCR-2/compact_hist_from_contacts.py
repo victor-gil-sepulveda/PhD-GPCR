@@ -11,14 +11,17 @@ from _collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy
 import os
+from histogram import parse_drug_info, parse_frames_info
 
 if __name__ == '__main__':
     contacts_file_with_paths = sys.argv[1]
     results_dir = sys.argv[2]
     tools.create_dir(results_dir)
     
-    handler = open(contacts_file_with_paths,"r")
+    num_atoms_per_drug = parse_drug_info(sys.argv[3])
+    frames_per_prot_drug = parse_frames_info(sys.argv[4])
     
+    handler = open(contacts_file_with_paths,"r")
     data = defaultdict(list)
     for line in handler:
         drug, protein, contacts_file_path = line.split()
@@ -47,7 +50,12 @@ if __name__ == '__main__':
         index = numpy.arange(n_groups) + bar_width/2
         legend_label = []
         for i, (drug, values) in enumerate(data[protein]):
-            x = numpy.array([values[res] for res in all_residue_labels])
+            num_drug_atoms = num_atoms_per_drug[drug]
+            print protein, drug
+            num_frames = frames_per_prot_drug[protein][drug] 
+            x = numpy.array([ float(values[res]) for res in all_residue_labels])
+            print x
+            x /= (num_drug_atoms*num_frames)
             print x
             rects = ax.bar(index, x, bar_width, color = colors[i])
             index = index + bar_width
