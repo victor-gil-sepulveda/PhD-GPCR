@@ -55,8 +55,10 @@ foreach line $data {
 	} else {
 	    mol showrep $current 0 off
 	}
+	
+	# Center display port at selection 
+	display resetview
 }
-#8934031100001545261
 close $fp
 
 mol top 0

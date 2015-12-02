@@ -27,13 +27,13 @@ if __name__ == "__main__":
     PDB_FILE = os.path.join(sys.argv[1], "%s.pdb"%sys.argv[2])
     FILTERED_PDB_FILE = os.path.join(RESULTS_PATH,"%s.filtered.pdb"%(sys.argv[2]))
     METRICS_FILE = os.path.join(RESULTS_PATH,"%s.metrics.dat"%(sys.argv[2]))
-    records = processDir(sys.argv[1], sys.argv[2])
-    selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(15.360.555.4)' < 6.5 and 'L1(15.360.555.4)' > 1.5", records)
-    genSingleTrajFast(FILTERED_PDB_FILE, records, selection)
-    genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
-    metrics = genMetrics(["L1(15.360.555.4)","L1  Binding Ene"], selection).T
+#     records = processDir(sys.argv[1], sys.argv[2])
+#     selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(15.360.555.4)' < 6.5 and 'L1(15.360.555.4)' > 1.5", records)
+#     genSingleTrajFast(FILTERED_PDB_FILE, records, selection)
+#     genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
+#     metrics = genMetrics(["L1(15.360.555.4)","L1  Binding Ene"], selection).T
     
-#     metrics = numpy.loadtxt(METRICS_FILE).T
+    metrics = numpy.loadtxt(METRICS_FILE).T
     #--------------------------------  
     # Prepare the clustering for this guy
     #--------------------------------
@@ -105,7 +105,7 @@ if __name__ == "__main__":
                 if contacts is not None:
                     # Get residue names
                     for atom in iter(contacts):
-                        residues.append("%s:%s:%s"%(atom.getResindex(), atom.getResname(), atom.getChid()))
+                        residues.append("%s:%s:%s"%(atom.getResnum(), atom.getResname(), atom.getChid()))
             
             #residues_file.write("%s %s \n"%(cluster_id, " ".join(set(residues))))
             residues_file.write("%s %s \n"%(cluster_id, " ".join(residues)))
