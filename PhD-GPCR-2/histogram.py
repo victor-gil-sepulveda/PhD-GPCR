@@ -74,13 +74,20 @@ def count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue
     
     return data
 
+
+def order_labels(label_set_with_repeats):
+    all_tags = list(set(label_set_with_repeats)); 
+    decorated = [ (int(label.split(":")[0]),label.split(":")[1:], i, label) for i, label in enumerate(all_tags)]
+    decorated.sort()
+    return [label for _, _, i, label in decorated] 
+
 def get_labels (contacts_per_cluster):
     cluster_ids = contacts_per_cluster.keys()
     all_contacts_tags = []
     for cid in cluster_ids:
         all_contacts_tags.extend(contacts_per_cluster[cid])
-    all_tags = list(set(all_contacts_tags)); all_tags.sort()
-    return all_tags
+    
+    return order_labels(all_contacts_tags)
     
 def filter_less_contacts_than(num_contacts, contact_labels, contacts_per_residue):
     filtered_contacts_residue_labels = []
@@ -91,7 +98,14 @@ def filter_less_contacts_than(num_contacts, contact_labels, contacts_per_residue
     
     return filtered_contacts_residue_labels
 
-def plot_histogram(contacts_per_cluster, contact_residue_labels, histogram_path, weight = None, normalize = False ):
+def get_max_val(contacts_per_cluster, contact_residue_labels, weight):
+    data = count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue_labels, weight, False)
+    acc = numpy.zeros(len(contact_residue_labels)) 
+    for row in data:
+        acc += row
+    return numpy.max(acc)
+
+def plot_histogram(protein, drug, max_val, contacts_per_cluster, contact_residue_labels, histogram_path, weight = None, normalize = False ):
     cluster_ids = contacts_per_cluster.keys()
     
     data = count_contacts_per_cluster_and_residue(contacts_per_cluster, contact_residue_labels, weight, normalize)
@@ -113,8 +127,13 @@ def plot_histogram(contacts_per_cluster, contact_residue_labels, histogram_path,
     pl.xticks(range(len(contact_residue_labels)))
     fontP = FontProperties()
     fontP.set_size('small')
-    pl.legend( ncol = 4, prop = fontP,fancybox=True, shadow=True, bbox_to_anchor=(0., 1.02, 1., .102), loc=3, mode="expand",borderaxespad=0.)
+    pl.legend( ncol = 4, prop = fontP,fancybox=True, shadow=False, 
+               bbox_to_anchor=(0., 1.02, 1., .102), loc=3, mode="expand", borderaxespad=0.)
     pl.subplots_adjust(bottom=0.15, top=0.8) 
+    pl.ylabel("Avg. num. contacts")
+    ax.set_title("%s + %s"%(protein, drug))
+    ax.set_autoscaley_on(False)
+    ax.set_ylim([0,max_val])
 #     pl.show()
     pl.savefig(histogram_path)
     

@@ -1,0 +1,3 @@
+CMA,resname CMA and name C2,resname CMA and name N5
+CMC,resname CMC and name C2,resname CMC and name N3
+DMA,resname DMA and name C3,resname DMA and name N4

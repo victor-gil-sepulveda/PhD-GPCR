@@ -1,6 +1,5 @@
-import sys
-import tabulate
 import os
+import tabulate
 from plopmetrics import processDir, filterRecords, genSingleTrajFast, genMetricsFile, genMetrics
 from tools import load_dic_in_json, save_dic_in_json, get_best_clustering,\
 create_dir
@@ -10,6 +9,7 @@ from prody.proteins.pdbfile import parsePDB
 from prody.measure.contacts import Contacts
 from histogram import get_labels, filter_less_contacts_than,\
     plot_histogram, get_num_contacts_per_residue
+from optparse import OptionParser
 
 if __name__ == "__main__":
 
@@ -17,32 +17,53 @@ if __name__ == "__main__":
     # 1 - directory where things are 
     # 2 - name of the pdb
     # 3 - template script for pyProCT
+    # Changed to optparse
+    
+    parser = OptionParser()
+    parser.add_option("--base", dest="base_dir")
+    parser.add_option("--protein", dest="protein")
+    parser.add_option("--template", dest="template")
+    parser.add_option("--allosteric", action = "store_true", default= False, dest="do_allosteric")
+    (options, args) = parser.parse_args()
 
-    RESULTS_PATH = os.path.join("Results", sys.argv[1], sys.argv[2])
+    if options.base_dir is None or options.protein is None or options.template is None:  
+        parser.error('Base directory, protein name and template are mandatory arguments.')
+
+
+    RESULTS_PATH = os.path.join("Results", options.base_dir, options.protein)
     create_dir(RESULTS_PATH)
 
     #--------------------------------
     # Perform the filtering
     #--------------------------------
-    PDB_FILE = os.path.join(sys.argv[1], "%s.pdb"%sys.argv[2])
-    FILTERED_PDB_FILE = os.path.join(RESULTS_PATH,"%s.filtered.pdb"%(sys.argv[2]))
-    METRICS_FILE = os.path.join(RESULTS_PATH,"%s.metrics.dat"%(sys.argv[2]))
-#     records = processDir(sys.argv[1], sys.argv[2])
-#     selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(15.360.555.4)' < 6.5 and 'L1(15.360.555.4)' > 1.5", records)
-#     genSingleTrajFast(FILTERED_PDB_FILE, records, selection)
-#     genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
-#     metrics = genMetrics(["L1(15.360.555.4)","L1  Binding Ene"], selection).T
+    ORTHOSTERIC = not options.allosteric
     
+    PDB_FILE = os.path.join(options.base_dir, "%s.pdb"%options.protein)
+    FILTERED_PDB_FILE = os.path.join(RESULTS_PATH,"%s.filtered.pdb"%(options.protein))
+    METRICS_FILE = os.path.join(RESULTS_PATH,"%s.metrics.dat"%(options.protein))
+    records = processDir(options.base_dir, options.protein)
+    if ORTHOSTERIC == True:
+        selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(15.360.555.4)' < 6.5 and 'L1(15.360.555.4)' > 1.5", records)
+        genSingleTrajFast(FILTERED_PDB_FILE, records, selection)
+        genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
+        metrics = genMetrics(["L1(15.360.555.4)","L1  Binding Ene"], selection).T
+    else: # range 6A - 14A
+        selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(24.954.352.7)' < 14.1 and 'L1(24.954.352.7)' > 5.9", records)
+        genSingleTrajFast(FILTERED_PDB_FILE, records, selection)
+        genMetricsFile(METRICS_FILE, ["L1(24.954.352.7)","L1  Binding Ene"], selection)
+        metrics = genMetrics(["L1(24.954.352.7)","L1  Binding Ene"], selection).T
+
     metrics = numpy.loadtxt(METRICS_FILE).T
+    
     #--------------------------------  
     # Prepare the clustering for this guy
     #--------------------------------
     ## Load template and modify its contents for this case
-    CLUSTERING_PATH = os.path.join(RESULTS_PATH,"%s_%s_clustering"%(sys.argv[1], sys.argv[2]))
+    CLUSTERING_PATH = os.path.join(RESULTS_PATH,"%s_%s_clustering"%(options.base_dir, options.protein))
     MAX_CLUSTERS = 10
     SCRIPT_PATH = os.path.join(RESULTS_PATH,"clustering.json")
     OUT_FILE = os.path.join(RESULTS_PATH, "clustering.out")
-    script = load_dic_in_json(sys.argv[3])
+    script = load_dic_in_json(options.template)
     script["global"]["workspace"]["base"] = CLUSTERING_PATH
     script["data"]["files"].append(FILTERED_PDB_FILE)
     script["clustering"]["evaluation"]["maximum_clusters"] = MAX_CLUSTERS
