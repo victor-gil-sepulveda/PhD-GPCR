@@ -20,29 +20,27 @@ if __name__ == "__main__":
     # Changed to optparse
     
     parser = OptionParser()
-    parser.add_option("--base", dest="base_dir")
+    parser.add_option("--drug", dest="drug")
     parser.add_option("--protein", dest="protein")
+    parser.add_option("--results", dest="results")
     parser.add_option("--template", dest="template")
     parser.add_option("--allosteric", action = "store_true", default= False, dest="do_allosteric")
+    parser.add_option("--plot", action = "store_true", default= False, dest="do_plots")
     (options, args) = parser.parse_args()
 
-    if options.base_dir is None or options.protein is None or options.template is None:  
-        parser.error('Base directory, protein name and template are mandatory arguments.')
+    if options.drug is None or options.protein is None or options.template is None or options.results is None:  
+        parser.error('Base directory, protein name, results directory and template are mandatory arguments.')
 
-
-    RESULTS_PATH = os.path.join("Results", options.base_dir, options.protein)
+    RESULTS_PATH = os.path.join(options.results, options.drug, options.protein)
     create_dir(RESULTS_PATH)
 
     #--------------------------------
     # Perform the filtering
     #--------------------------------
-    ORTHOSTERIC = not options.allosteric
-    
-    PDB_FILE = os.path.join(options.base_dir, "%s.pdb"%options.protein)
     FILTERED_PDB_FILE = os.path.join(RESULTS_PATH,"%s.filtered.pdb"%(options.protein))
     METRICS_FILE = os.path.join(RESULTS_PATH,"%s.metrics.dat"%(options.protein))
-    records = processDir(options.base_dir, options.protein)
-    if ORTHOSTERIC == True:
+    records = processDir(options.drug, options.protein)
+    if not options.allosteric:
         selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(15.360.555.4)' < 6.5 and 'L1(15.360.555.4)' > 1.5", records)
         genSingleTrajFast(FILTERED_PDB_FILE, records, selection)
         genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
@@ -59,7 +57,7 @@ if __name__ == "__main__":
     # Prepare the clustering for this guy
     #--------------------------------
     ## Load template and modify its contents for this case
-    CLUSTERING_PATH = os.path.join(RESULTS_PATH,"%s_%s_clustering"%(options.base_dir, options.protein))
+    CLUSTERING_PATH = os.path.join(RESULTS_PATH,"%s_%s_clustering"%(options.drug, options.protein))
     MAX_CLUSTERS = 10
     SCRIPT_PATH = os.path.join(RESULTS_PATH,"clustering.json")
     OUT_FILE = os.path.join(RESULTS_PATH, "clustering.out")
@@ -133,28 +131,29 @@ if __name__ == "__main__":
             contacts_per_cluster[cluster_id] = residues
     residues_file.close()
     
-    #--------------------------------
-    # Plot distribution of the residues
-    #--------------------------------
-    contacts_per_residue = get_num_contacts_per_residue(contacts_per_cluster)
+    if options.do_plots:
+        #--------------------------------
+        # Plot distribution of the residues
+        #--------------------------------
+        contacts_per_residue = get_num_contacts_per_residue(contacts_per_cluster)
+        
+        contact_residue_labels =  get_labels (contacts_per_cluster)
+        
+        # A normal plot
+        target = os.path.join(RESULTS_PATH, "histogram.svg")
+        plot_histogram(contacts_per_cluster, contact_residue_labels, target, False)
+        
+        # A plot averaging
+        target = os.path.join(RESULTS_PATH, "histogram_a.svg")
+        plot_histogram(contacts_per_cluster, contact_residue_labels, target, True)
     
-    contact_residue_labels =  get_labels (contacts_per_cluster)
+        
+        # A plot filtering
+        filtered_contact_residue_labels =  filter_less_contacts_than(2000, contact_residue_labels, contacts_per_residue)
+        target = os.path.join(RESULTS_PATH, "histogram_f.svg")
+        plot_histogram(contacts_per_cluster, filtered_contact_residue_labels, target, False)
     
-    # A normal plot
-    target = os.path.join(RESULTS_PATH, "histogram.svg")
-    plot_histogram(contacts_per_cluster, contact_residue_labels, target, False)
-    
-    # A plot averaging
-    target = os.path.join(RESULTS_PATH, "histogram_a.svg")
-    plot_histogram(contacts_per_cluster, contact_residue_labels, target, True)
-
-    
-    # A plot filtering
-    filtered_contact_residue_labels =  filter_less_contacts_than(2000, contact_residue_labels, contacts_per_residue)
-    target = os.path.join(RESULTS_PATH, "histogram_f.svg")
-    plot_histogram(contacts_per_cluster, filtered_contact_residue_labels, target, False)
-
-    # A plot filtering + averaging
-    filtered_contact_residue_labels =  filter_less_contacts_than(2000, contact_residue_labels, contacts_per_residue)
-    target = os.path.join(RESULTS_PATH, "histogram_fa.svg")
-    plot_histogram(contacts_per_cluster, filtered_contact_residue_labels, target, True)
+        # A plot filtering + averaging
+        filtered_contact_residue_labels =  filter_less_contacts_than(2000, contact_residue_labels, contacts_per_residue)
+        target = os.path.join(RESULTS_PATH, "histogram_fa.svg")
+        plot_histogram(contacts_per_cluster, filtered_contact_residue_labels, target, True)
