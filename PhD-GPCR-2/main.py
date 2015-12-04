@@ -40,7 +40,7 @@ if __name__ == "__main__":
     FILTERED_PDB_FILE = os.path.join(RESULTS_PATH,"%s.filtered.pdb"%(options.protein))
     METRICS_FILE = os.path.join(RESULTS_PATH,"%s.metrics.dat"%(options.protein))
     records = processDir(options.drug, options.protein)
-    if not options.allosteric:
+    if not options.do_allosteric:
         selection = filterRecords("'L1  Binding Ene' < -226 and 'L1  Binding Ene' > -424 and 'L1(15.360.555.4)' < 6.5 and 'L1(15.360.555.4)' > 1.5", records)
         genSingleTrajFast(FILTERED_PDB_FILE, records, selection)
         genMetricsFile(METRICS_FILE, ["L1(15.360.555.4)","L1  Binding Ene"], selection)
