@@ -54,7 +54,9 @@ if __name__ == '__main__':
             motifs[parts[0]][parts[1]] = parts[2]
     
     # load colors per cluster
-    colors = [(1.,0.,0.), (0.,1.,0.), (0.,0.,1.)]
+    #colors = [(1.,0.,0.), (0.,1.,0.), (0.,0.,1.)]*10
+    import seaborn as sns
+    colors = sns.color_palette("hls", 10)
     
     # VMD execution template
     template = open("/home/victor/git/PhD-GPCR/PhD-GPCR-2/data/load_script_template.tcl").read()
