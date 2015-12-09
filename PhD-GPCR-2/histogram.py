@@ -162,27 +162,92 @@ def plot_histogram_to_axis(ax, protein, drug,
     ax.set_xticks(numpy.arange(len(contact_residue_labels))+0.25)
     
 
-def calc_contacts_per_motif(proteins, drugs, data, num_atoms_per_drug, frames_per_prot_drug, motifs, ordered_motifs):
+def calc_contacts_per_cluster_per_motif_for_prots_and_drugs(proteins, drugs, data, num_atoms_per_drug, frames_per_prot_drug, motifs, ordered_motifs):
     contacts_per_motif = defaultdict(dict)
     for protein in proteins:
         for drug in drugs:
             contacts_per_cluster = data["contacts_per_cluster"][protein][drug]
             weight = num_atoms_per_drug[drug]*frames_per_prot_drug[protein][drug]
             
-            contacts_per_motif[protein][drug] = calc_prot_drug_contacts_per_motif(contacts_per_cluster,
+            contacts_per_motif[protein][drug] = calc_contacts_per_cluster_per_motif(contacts_per_cluster,
                                                                                 motifs[protein],
                                                                                 ordered_motifs,
                                                                                 weight)  
     return contacts_per_motif
 
-def calc_prot_drug_contacts_per_motif(contacts_per_cluster, protein_motifs, ordered_motifs, weight):
+def calc_contacts_per_cluster_per_motif(contacts_per_cluster, protein_motifs, ordered_motifs, weight):
     contacts_per_motif = defaultdict(lambda: defaultdict(int))
     for motif_name in ordered_motifs:
         if motif_name in protein_motifs:
-            print motif_name
             for cluster_id in contacts_per_cluster: 
                 for res_id in contacts_per_cluster[cluster_id]:
                     res = int(res_id.split(":")[0]) 
-                    if res >= protein_motifs[motif_name][0] and res <= protein_motifs[motif_name][1]:
+                    if res >= protein_motifs[motif_name][0] and res < protein_motifs[motif_name][1]:
                         contacts_per_motif[cluster_id][motif_name] += 1/weight  
     return contacts_per_motif
+
+def calc_contacts_per_motif(contacts_per_cluster_per_motif, ordered_motifs):
+    contacts_per_motif = defaultdict(int)
+    for cluster_id in contacts_per_cluster_per_motif:
+        for motif_name in ordered_motifs:
+            contacts_per_motif[motif_name] += contacts_per_cluster_per_motif[cluster_id][motif_name]
+    return contacts_per_motif
+
+def parse_motifs(motifs_path):
+    motifs = defaultdict(dict)
+    for line in open(motifs_path):
+        if line[0]!= "#":
+            parts = [ s.strip() for s in line.split(",")]
+            sel_parts = parts[2].split()
+            motifs[parts[0]][parts[1]] = (int(sel_parts[1]),int(sel_parts[3]))
+    return motifs
+
+#     # Order motifs per protein
+#     ordered_motifs = {} 
+#     for protein in motifs:
+#         ordered_motifs[protein] = [c for s,c in sorted([(motifs[protein][k],k) for k in motifs[protein]])]
+#         print protein, ordered_motifs[protein]
+#
+
+def parse_contacts_file(filename):
+    data = {"contacts_per_cluster":defaultdict(lambda:defaultdict()),
+            "contacts_per_residue":defaultdict(lambda:defaultdict())}
+    drugs = []
+    proteins = []
+    handler = open(filename,"r")
+    for line in handler:
+        if line[0]!= "#":
+            drug, protein, contacts_file_path = line.split()
+            if not protein in proteins: proteins.append(protein)
+            if not drug in drugs: drugs.append(drug)
+            contacts_per_cluster, contacts_per_residue = parse_contacts(contacts_file_path)
+            data["contacts_per_cluster"][protein][drug] =  contacts_per_cluster
+            data["contacts_per_residue"][protein][drug] =  contacts_per_residue
+    handler.close()
+    return data, proteins, drugs
+
+
+def scale_axes_to_max_val(axes, num_rows, num_columns):
+    max_val = 0
+    for i in range(num_rows*num_columns):
+        max_val = max(max_val, axes[i/num_columns, i%num_columns].get_ylim()[1])
+    for i in range(num_rows*num_columns):
+        axes[i/num_columns, i%num_columns].set_ylim(0,max_val)  
+        
+def get_total_contacts_per_protein_and_drug(contacts_per_residue_protein_drug, 
+                                            proteins, drugs, 
+                                            num_atoms_per_drug, frames_per_prot_drug):
+    total_contacts_p_protein_drug  = {"Protein":[],"Drug":[],"Contacts":[]}
+    for protein in proteins:
+        for drug in drugs:
+            total = 0
+            for res_id in contacts_per_residue_protein_drug[protein][drug]:
+                total += contacts_per_residue_protein_drug[protein][drug][res_id]
+            weight = num_atoms_per_drug[drug]*frames_per_prot_drug[protein][drug]
+            total /= weight
+            total_contacts_p_protein_drug["Protein"].append( protein)
+            total_contacts_p_protein_drug["Drug"].append(drug)
+            total_contacts_p_protein_drug["Contacts"].append(total)
+    
+    return total_contacts_p_protein_drug
+                

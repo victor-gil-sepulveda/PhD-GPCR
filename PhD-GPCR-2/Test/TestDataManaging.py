@@ -9,9 +9,9 @@ import histogram
 
 import Test
 from histogram import get_labels, filter_less_contacts_than,\
-    count_contacts_per_cluster_and_residue, calc_prot_drug_contacts_per_motif
+    count_contacts_per_cluster_and_residue, calc_contacts_per_cluster_per_motif,\
+    calc_contacts_per_motif, parse_motifs
 import numpy
-from _collections import defaultdict
 
 class TestDataManaging(unittest.TestCase):
     contacts_file_name = os.path.join(Test.__path__[0], "data", "DMA_WNV.txt")
@@ -80,27 +80,73 @@ class TestDataManaging(unittest.TestCase):
                         [  0., 0., 0., 0.]]
         numpy.testing.assert_equal(correct_data, data)
     
-#     def test_parse_motifs
-    
+    def test_parse_motifs(self):
+        motifs = parse_motifs(os.path.join(Test.__path__[0], "data", "motifs.txt"))
+        self.assertDictEqual({
+                              'C/VI': (389, 402), 
+                              'D': (405, 429), 
+                              'F/I-II': (180, 206), 
+                              'E/VII': (430, 446), 
+                              'B/V': (335, 355), 
+                              'A/IV': (259, 270), 
+                              'Priming Loop': (519, 538)
+                              }, 
+                             motifs["WNV"])
+        
     def test_calc_prot_drug_contacts_per_motif(self):
         contacts_per_cluster, _ = histogram.parse_contacts(TestDataManaging.small_contacts_file_name)
 
-        motifs = defaultdict(dict)
-        for line in open(os.path.join(Test.__path__[0], "data", "motifs.txt")):
-            if line[0]!= "#":
-                parts = [ s.strip() for s in line.split(",")]
-                sel_parts = parts[2].split()
-                motifs[parts[0]][parts[1]] = (int(sel_parts[1]),int(sel_parts[3]))
-        print motifs["WNV"]
+        motifs = parse_motifs(os.path.join(Test.__path__[0], "data", "motifs.txt"))
         
         ordered_motifs = ['F/I-II', 'A/IV', 'B/V', 'C/VI', 'D', 'E/VII', 'Priming Loop']
    
-        print calc_prot_drug_contacts_per_motif(contacts_per_cluster, 
+        prot_drug_contacts_per_motif =  calc_contacts_per_cluster_per_motif(contacts_per_cluster, 
                                                 motifs["WNV"], 
                                                 ordered_motifs, 
                                                 1.)
         
+        correct_prot_drug_contacts_per_motif = {
+                                                'cluster_8':  {'F/I-II': 4.0, 'B/V': 2.0}, 
+                                                'cluster_6':  {'A/IV': 2.0, 'B/V': 4.0, 'Priming Loop': 4.0}, 
+                                                'cluster_7':  {'A/IV': 15.0, 'Priming Loop': 1.0}, 
+                                                'cluster_4':  {'C/VI': 6.0, 'Priming Loop': 4.0, 'B/V': 6.0}, 
+                                                'cluster_5':  {'E/VII': 6.0}, 
+                                                'cluster_2':  {'C/VI': 4.0, 'D': 5.0, 'Priming Loop': 3.0}, 
+                                                'cluster_3':  {'Priming Loop': 6.0, 'B/V': 7.0}, 
+                                                'cluster_0':  {'C/VI': 7.0, 'E/VII': 7.0, 'Priming Loop': 2.0}, 
+                                                'cluster_1':  {'E/VII': 2.0, 'A/IV': 10.0, 'Priming Loop': 1.0, 'D': 2.0}
+                                                }
+        self.assertDictEqual(correct_prot_drug_contacts_per_motif, prot_drug_contacts_per_motif)
         
+        correct_contacts_per_motif = {
+                                 'F/I-II': 4.,
+                                 'A/IV': 27.,
+                                 'B/V': 19.,
+                                 'C/VI': 17.,
+                                 'D': 7.,
+                                 'E/VII': 15.,
+                                 'Priming Loop': 21. 
+                              }
+        contacts_per_motif = calc_contacts_per_motif(correct_prot_drug_contacts_per_motif, ordered_motifs)
+        self.assertDictEqual(correct_contacts_per_motif,contacts_per_motif)
+    
+#     def test_get_..
+#     values = data["contacts_per_residue"][protein][drug]
+#             weight = num_atoms_per_drug[drug]*frames_per_prot_drug[protein][drug]
+#             x = numpy.array([ float(values[res]) for res in common_residue_labels_per_protein[protein]]) / weight
+#             
+        
+#         
+#         def common_residue_labels
+#         common_residue_labels_per_protein = {}
+#     for protein in proteins:
+#         all_residue_labels = []
+#         for drug in drugs: 
+#             for residue in data["contacts_per_residue"][protein][drug]:
+#                 if data["contacts_per_residue"][protein][drug][residue] >= THRESHOLD:
+#                     all_residue_labels.append(residue)
+#         common_residue_labels_per_protein[protein] = order_labels(all_residue_labels)
+    
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

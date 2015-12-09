@@ -1,43 +1,43 @@
 #Protein,Motif,Selection,,
-BVDV,F/I-II ,residue 257 to 290,residue,257 to 290
-HCV,F/I-II ,residue 135 to 163,residue,  135 to 163
-Polio,F/I-II ,residue 153 to 179,residue,  153 to 179
-JEV,F/I-II ,residue 449 to 475,residue,  449 to 475
-TBEV,F/I-II ,residue 180 to 206,residue,  180 to 206
-WNV,F/I-II ,residue 180 to 206,residue,  180 to 206
-BVDV, A/IV ,residue 341 to 352,residue,341 to 352
-HCV, A/IV ,residue 216 to 227,residue,  216 to 227
-Polio, A/IV ,residue 229 to 240,residue,  229 to 240
-JEV, A/IV ,residue 528 to 539,residue,  528 to 539
-TBEV, A/IV ,residue 259 to 270,residue,  259 to 270
-WNV, A/IV ,residue 259 to 270,residue,  259 to 270
-BVDV,  B/V ,residue 409 to 429,residue,409 to 429
-HCV,  B/V ,residue 286 to 306,residue,  286 to 306
-Polio,  B/V ,residue 292 to 312,residue,  292 to 312
-JEV,  B/V ,residue 604 to 624,residue,  604 to 624
-TBEV,  B/V ,residue 335 to 355,residue,  335 to 355
-WNV,  B/V ,residue 335 to 355,residue,  335 to 355
-BVDV,  C/VI,residue 442 to 455,residue,442 to 455
-HCV,  C/VI,residue 312 to 325,residue,  312 to 325
-Polio,  C/VI,residue 322 to 335,residue,  322 to 335
-JEV,  C/VI,residue 658 to 671,residue,  658 to 671
-TBEV,  C/VI,residue 386 to 399,residue,  386 to 399
-WNV,  C/VI,residue 389 to 402,residue,  389 to 402
-BVDV,   D,residue 461 to 485,residue,461 to 485
-HCV,   D,residue 335 to 358,residue,  335 to 358
-Polio,   D ,residue 336 to 362,residue,  336 to 362
-JEV,   D ,residue 674 to 698,residue,  674 to 698
-TBEV,   D ,residue 402 to 426,residue,  402 to 426
-WNV,   D ,residue 405 to 429,residue,  405 to 429
-BVDV, E/VII,residue 486 to 503,residue,486 to 503
-HCV, E/VII,residue 359 to 375,residue,  359 to 375
-Polio, E/VII,residue 363 to 380,residue,  363 to 380
-JEV, E/VII,residue 699 to 715,residue,  699 to 715
-TBEV, E/VII,residue 427 to 443,residue,  427 to 443
-WNV, E/VII,residue 430 to 446,residue,  430 to 446
-BVDV,Priming Loop,residue 572 to 584,residue,572 to 584
-HCV,Priming Loop,residue 438 to 456,residue,438 to 456
-#Polio,Priming Loop,residue None,residue,None
-JEV,Priming Loop,residue 788 to 807,residue,788 to 807
-TBEV,Priming Loop,residue 516 to 535,residue,516 to 535
-WNV,Priming Loop,residue 519 to 538,residue,519 to 538
+BVDV,F/I-II ,resid 257 to 290,resid,257 to 290
+HCV,F/I-II ,resid 135 to 163,resid,  135 to 163
+Polio,F/I-II ,resid 153 to 179,resid,  153 to 179
+JEV,F/I-II ,resid 449 to 475,resid,  449 to 475
+TBEV,F/I-II ,resid 180 to 206,resid,  180 to 206
+WNV,F/I-II ,resid 180 to 206,resid,  180 to 206
+BVDV, A/IV ,resid 341 to 352,resid,341 to 352
+HCV, A/IV ,resid 216 to 227,resid,  216 to 227
+Polio, A/IV ,resid 229 to 240,resid,  229 to 240
+JEV, A/IV ,resid 528 to 539,resid,  528 to 539
+TBEV, A/IV ,resid 259 to 270,resid,  259 to 270
+WNV, A/IV ,resid 259 to 270,resid,  259 to 270
+BVDV,  B/V ,resid 409 to 429,resid,409 to 429
+HCV,  B/V ,resid 286 to 306,resid,  286 to 306
+Polio,  B/V ,resid 292 to 312,resid,  292 to 312
+JEV,  B/V ,resid 604 to 624,resid,  604 to 624
+TBEV,  B/V ,resid 335 to 355,resid,  335 to 355
+WNV,  B/V ,resid 335 to 355,resid,  335 to 355
+BVDV,  C/VI,resid 442 to 455,resid,442 to 455
+HCV,  C/VI,resid 312 to 325,resid,  312 to 325
+Polio,  C/VI,resid 322 to 335,resid,  322 to 335
+JEV,  C/VI,resid 658 to 671,resid,  658 to 671
+TBEV,  C/VI,resid 386 to 399,resid,  386 to 399
+WNV,  C/VI,resid 389 to 402,resid,  389 to 402
+BVDV,   D,resid 461 to 485,resid,461 to 485
+HCV,   D,resid 335 to 358,resid,  335 to 358
+Polio,   D ,resid 336 to 362,resid,  336 to 362
+JEV,   D ,resid 674 to 698,resid,  674 to 698
+TBEV,   D ,resid 402 to 426,resid,  402 to 426
+WNV,   D ,resid 405 to 429,resid,  405 to 429
+BVDV, E/VII,resid 486 to 503,resid,486 to 503
+HCV, E/VII,resid 359 to 375,resid,  359 to 375
+Polio, E/VII,resid 363 to 380,resid,  363 to 380
+JEV, E/VII,resid 699 to 715,resid,  699 to 715
+TBEV, E/VII,resid 427 to 443,resid,  427 to 443
+WNV, E/VII,resid 430 to 446,resid,  430 to 446
+BVDV,Priming Loop,resid 572 to 584,resid,572 to 584
+HCV,Priming Loop,resid 438 to 456,resid,438 to 456
+#Polio,Priming Loop,resid None,resid,None
+JEV,Priming Loop,resid 788 to 807,resid,788 to 807
+TBEV,Priming Loop,resid 516 to 535,resid,516 to 535
+WNV,Priming Loop,resid 519 to 538,resid,519 to 538

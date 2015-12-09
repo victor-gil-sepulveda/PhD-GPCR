@@ -14,7 +14,7 @@ def gen_motifs_code(motifs):
 #mol representation Licorice 0.300000 12.000000 12.000000
 mol representation NewCartoon 0.300000 12.000000 4.500000 0
 mol addrep $current
-draw text [measure center [atomselect $current "%(motif_selection)s"]] "%(motif_name)s"
+draw text [measure center [atomselect $current "%(motif_selection)s"]] "%(motif_name)s"  10 60
 """
     for motif_name in motifs:
         motif_code_strings.append(motif_code_template%{"motif_selection":motifs[motif_name],
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     # load colors per cluster
     #colors = [(1.,0.,0.), (0.,1.,0.), (0.,0.,1.)]*10
     import seaborn as sns
-    colors = sns.color_palette("hls", 10)
+    colors = sns.hls_palette(15, l=.3, s=.8)
     
     # VMD execution template
     template = open("/home/victor/git/PhD-GPCR/PhD-GPCR-2/data/load_script_template.tcl").read()
@@ -64,7 +64,8 @@ if __name__ == '__main__':
     for line in open(options.input):
         protein, drug, folder = line.strip().split()
         print folder
-        cluster_files = glob.glob(os.path.join(folder, "ligand_cluster_*.pdb"))
+        # sorted clusters and same color generation always make the same cluster_id, color pair
+        cluster_files = sorted(glob.glob(os.path.join(folder, "ligand_cluster_*.pdb")))
         clusters_filename = os.path.join(folder, "clusters.lst")
         clusters_file = open(clusters_filename, "w")
         for i, cf in enumerate(sorted(cluster_files)):

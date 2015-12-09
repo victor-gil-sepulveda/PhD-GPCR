@@ -29,10 +29,11 @@ display projection orthographic
 display ambientoclusion on
 display antialias on
 display shadows on
+color Display Background white
 axes location off
 
 material add "balls"
-material change opacity "balls" 0.9 
+material change opacity "balls" 0.3 
 material change shininess "balls" 0.3 
 
 # prepare protein
@@ -59,8 +60,15 @@ foreach line $data {
 	set g [lindex $file_color 2]
 	set b [lindex $file_color 3]
 	
-	color change rgb $current $r $g $b
-	graphics $current color $current
+#	color change rgb $current $r $g $b
+#	graphics $current color $current
+#	graphics $current materials on
+#	graphics $current material "balls"
+	
+	color add item "arrows" "color_$current" white
+	set my_color [color "arrows" "color_$current"]
+	color change rgb $my_color $r $g $b
+	graphics $current color $my_color
 	graphics $current materials on
 	graphics $current material "balls"
 	
@@ -89,9 +97,10 @@ foreach line $data {
     #mol addrep $current
 
     mol showrep $current 0 off
-	
 }
 close $fp
+
+color change rgb white
 
 mol top 0
 set current 0
@@ -101,3 +110,5 @@ set current 0
 
 # Center display port at selection 
 display resetview
+
+
