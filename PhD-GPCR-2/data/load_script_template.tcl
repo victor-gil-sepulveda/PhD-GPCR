@@ -33,8 +33,11 @@ color Display Background white
 axes location off
 
 material add "balls"
-material change opacity "balls" 0.3 
-material change shininess "balls" 0.3 
+material change opacity "balls" 0.5 
+material change shininess "balls" 0.1 
+material change outline "balls" 0.3 
+material change outlinewidth "balls" 0.4 
+
 
 # prepare protein
 set current [mol load pdb "%(main_structure)s"]
@@ -60,13 +63,8 @@ foreach line $data {
 	set g [lindex $file_color 2]
 	set b [lindex $file_color 3]
 	
-#	color change rgb $current $r $g $b
-#	graphics $current color $current
-#	graphics $current materials on
-#	graphics $current material "balls"
-	
-	color add item "arrows" "color_$current" white
-	set my_color [color "arrows" "color_$current"]
+	#Set colors starting from 200 
+	set my_color [expr $current + 200]
 	color change rgb $my_color $r $g $b
 	graphics $current color $my_color
 	graphics $current materials on
@@ -110,5 +108,18 @@ set current 0
 
 # Center display port at selection 
 display resetview
+
+# Save (http://www.ks.uiuc.edu/Research/vmd/mailing_list/vmd-l/19933.html)
+#foreach mol [molinfo list] { 
+#    # save orientation and zoom parameters 
+#      set viewpoints($mol) [molinfo $mol get { 
+#        center_matrix rotate_matrix scale_matrix global_matrix}] 
+#    } 
+
+# Load display matrices
+foreach mol [molinfo list] { 
+    molinfo $mol set {center_matrix rotate_matrix scale_matrix global_matrix} %(viewpoint_values)s 
+} 
+
 
 

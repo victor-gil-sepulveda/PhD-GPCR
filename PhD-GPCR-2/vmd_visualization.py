@@ -14,7 +14,7 @@ def gen_motifs_code(motifs):
 #mol representation Licorice 0.300000 12.000000 12.000000
 mol representation NewCartoon 0.300000 12.000000 4.500000 0
 mol addrep $current
-draw text [measure center [atomselect $current "%(motif_selection)s"]] "%(motif_name)s"  10 60
+draw text [measure center [atomselect $current "%(motif_selection)s"]] "%(motif_name)s"  size 1 thickness 2
 """
     for motif_name in motifs:
         motif_code_strings.append(motif_code_template%{"motif_selection":motifs[motif_name],
