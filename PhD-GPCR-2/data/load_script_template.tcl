@@ -4,8 +4,8 @@
 proc vmd_draw_arrow {mol start end} {
     # an arrow is made of a cylinder and a cone
     set middle [vecadd $start [vecscale 0.9 [vecsub $end $start]]]
-    graphics $mol cylinder $start $middle radius 0.15
-    graphics $mol cone $middle $end radius 0.25
+    graphics $mol cylinder $start $middle radius 0.3
+    graphics $mol cone $middle $end radius 0.5
 }
 
 proc label_atom {selection_string label_string} {
@@ -32,21 +32,16 @@ display shadows on
 color Display Background white
 axes location off
 
-material add "balls"
-material change opacity "balls" 0.5 
-material change shininess "balls" 0.1 
-material change outline "balls" 0.3 
-material change outlinewidth "balls" 0.4 
+material add "my_material"
+material change opacity "my_material" 1.0 
+material change shininess "my_material" 1.0 
+material change outline "my_material" 0.9
+material change outlinewidth "my_material" 0.9 
 
 
 # prepare protein
 set current [mol load pdb "%(main_structure)s"]
 mol rename top "%(main_structure)s"
-mol showrep $current 0 off
-#mol color ColorID 4
-#mol selection "protein"
-#mol representation NewCartoon 0.300000 12.000000 4.500000 0
-#mol addrep $current
 
 # load ligand clusters
 foreach line $data {
@@ -63,12 +58,12 @@ foreach line $data {
 	set g [lindex $file_color 2]
 	set b [lindex $file_color 3]
 	
-	#Set colors starting from 200 
-	set my_color [expr $current + 200]
+	#Set colors starting from 17 (current starts in 1)
+	set my_color [expr $current + 17]
 	color change rgb $my_color $r $g $b
 	graphics $current color $my_color
 	graphics $current materials on
-	graphics $current material "balls"
+	graphics $current material "my_material"
 	
 	
 	# Add balls in place of ligands
@@ -79,22 +74,22 @@ foreach line $data {
 #	     graphics $current sphere $lig_center 
 #	 }
 
-	# Add arrows in place of ligands 
-	set n [molinfo $current get numframes]
-	for { set i 0 } { $i < $n } { incr i } {
-		set atom_begin [atomselect $current "%(arrow_begin_selection)s" frame $i ]
-		set begin_coords [lindex [$atom_begin get {x y z}] 0]
-		set atom_end [atomselect $current "%(arrow_end_selection)s" frame $i ]
-		set end_coords [lindex [$atom_end get {x y z}] 0]
-		vmd_draw_arrow top $begin_coords $end_coords
-	}
+%(option_arrow)s	# Add arrows in place of ligands 
+%(option_arrow)s	set n [molinfo $current get numframes]
+%(option_arrow)s	for { set i 0 } { $i < $n } { incr i } {
+%(option_arrow)s		set atom_begin [atomselect $current "%(arrow_begin_selection)s" frame $i ]
+%(option_arrow)s		set begin_coords [lindex [$atom_begin get {x y z}] 0]
+%(option_arrow)s		set atom_end [atomselect $current "%(arrow_end_selection)s" frame $i ]
+%(option_arrow)s		set end_coords [lindex [$atom_end get {x y z}] 0]
+%(option_arrow)s		vmd_draw_arrow top $begin_coords $end_coords
+%(option_arrow)s	}
 	
-	# In case we need to show the actual ligand...
-	#mol selection "resname CMA and noh"
-	#mol representation Licorice 0.300000 12.000000 12.000000
-    #mol addrep $current
+%(option_drug)s	# In case we need to show the actual ligand...
+%(option_drug)s	mol selection "resname %(drug)s and noh"
+%(option_drug)s	mol representation Licorice 0.300000 12.000000 12.000000
+%(option_drug)s	mol color ColorId $my_color
+%(option_drug)s mol addrep $current
 
-    mol showrep $current 0 off
 }
 close $fp
 
@@ -103,23 +98,37 @@ color change rgb white
 mol top 0
 set current 0
 
-# show motifs
-%(motifs_code)s
+# Hide full prot
+mol showrep $current 0 off
+mol color ColorId 3
 
-# Center display port at selection 
-display resetview
+# show motifs
+set my_color 11
+%(motifs_code)s
 
 # Save (http://www.ks.uiuc.edu/Research/vmd/mailing_list/vmd-l/19933.html)
 #foreach mol [molinfo list] { 
 #    # save orientation and zoom parameters 
-#      set viewpoints($mol) [molinfo $mol get { 
-#        center_matrix rotate_matrix scale_matrix global_matrix}] 
+#      set viewpoints($mol) [molinfo $mol get {center_matrix rotate_matrix scale_matrix global_matrix}] 
 #    } 
 
+# Center display port at selection 
+set current 1
+display resetview
+
 # Load display matrices
-foreach mol [molinfo list] { 
-    molinfo $mol set {center_matrix rotate_matrix scale_matrix global_matrix} %(viewpoint_values)s 
-} 
+%(option_camera)s foreach mol [molinfo list] { 
+%(option_camera)s    molinfo $mol set {center_matrix rotate_matrix scale_matrix global_matrix} {%(camera_settings)s}
+%(option_camera)s } 
 
+# Render
+%(option_camera)srender Tachyon %(pre_render_file)s "/usr/local/lib/vmd/tachyon_LINUX -fullshade -aasamples 12 %(pre_render_file)s -trans_vmd -rescale_lights 0.3 -add_skylight 1.0  -normalize -format PSD48 -res 1024 1024 -o %(rendered_file)s"
 
+# Load zoomed display matrices
+%(option_camera)s foreach mol [molinfo list] { 
+%(option_camera)s    molinfo $mol set {center_matrix rotate_matrix scale_matrix global_matrix} {%(camera_settings_zoomed)s}
+%(option_camera)s } 
+
+# Render
+%(option_camera)srender Tachyon %(pre_render_zoom_file)s "/usr/local/lib/vmd/tachyon_LINUX -fullshade -aasamples 12 zoom_%(pre_render_zoom_file)s -trans_vmd -rescale_lights 0.3 -add_skylight 1.0  -normalize -format PSD48 -res 1024 1024 -o zoom_%(rendered_zoom_file)s"
 

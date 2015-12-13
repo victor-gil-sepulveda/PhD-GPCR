@@ -35,6 +35,7 @@ if __name__ == '__main__':
     parser.add_option("-i", dest="input")
     parser.add_option("-r", dest="results")
     parser.add_option("-o", dest="output")
+    parser.add_option("--prototypes",action="store_true", default = False, dest="prototypes")
     (options, args) = parser.parse_args()
 
     if options.input is None:
@@ -47,20 +48,41 @@ if __name__ == '__main__':
         parser.error('You must define the results folder')
     
     output = open(options.output,"w")
-    for line in open(options.input):
-        protein, drug, folder = line.strip().split()
-        files = glob.glob(os.path.join(folder, "cluster_*.pdb"))
-        results_folder = os.path.join(options.results, drug, protein)
-        create_directory(results_folder)
-        output.write("%s %s %s\n"%(protein, drug, results_folder))
-        for i, filename in enumerate(sorted(files)):
+    if not options.prototypes:
+        for line in open(options.input):
+            protein, drug, folder = line.strip().split()
+            files = glob.glob(os.path.join(folder, "cluster_*.pdb"))
+            results_folder = os.path.join(options.results, drug, protein)
+            create_directory(results_folder)
+            output.write("%s %s %s\n"%(protein, drug, results_folder))
+            for i, filename in enumerate(sorted(files)):
+                pdb = parsePDB(filename)
+                if i == 0:
+                    # Extract first frame
+                    prot = pdb.select("protein")
+                    writePDB(os.path.join(results_folder, "%s.pdb"%protein), prot, csets=[0])
+                # Extract ligands
+                ligands = pdb.select("resname %s"%drug)
+                writePDB(os.path.join(results_folder, "ligand_%s"%os.path.basename(filename)), ligands)
+    else:
+        # Input file contains the folders with prototypes file
+        for line in open(options.input):
+            protein, drug, folder = line.strip().split()
+            filename  = os.path.join(folder, "representatives.pdb")
+            results_folder = os.path.join(options.results, drug, protein)
+            # Look for "REMARK cluster id :"
+            # Parse once to get correct ordering of clusters
+            cluster_ids = []
+            for line in open(filename):
+                if "REMARK cluster id :" in line:
+                    cluster_ids.append(line.split()[4])
+            print cluster_ids
             pdb = parsePDB(filename)
-            if i == 0:
-                # Extract first frame
-                prot = pdb.select("protein")
-                writePDB(os.path.join(results_folder, "%s.pdb"%protein), prot, csets=[0])
-            # Extract ligands
-            ligands = pdb.select("resname %s"%drug)
-            writePDB(os.path.join(results_folder, "ligand_%s"%os.path.basename(filename)), ligands)
+            prot = pdb.select("protein")
+            writePDB(os.path.join(results_folder, "%s.pdb"%protein), prot, csets=[0])
+            for i, cluster_id in enumerate(cluster_ids):
+                ligands = pdb.select("resname %s"%drug)
+                writePDB(os.path.join(results_folder, "ligand_%s"%cluster_id), ligands, csets=[i])
+            output.write("%s %s %s\n"%(protein, drug, results_folder))
     output.close()
     
