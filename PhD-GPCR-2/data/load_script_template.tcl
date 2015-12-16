@@ -33,10 +33,11 @@ color Display Background white
 axes location off
 
 material add "my_material"
-material change opacity "my_material" 1.0 
-material change shininess "my_material" 1.0 
+material change opacity "my_material" 1.0
+material change shininess "my_material" 1.0
+material change specular "my_material" 0.0
 material change outline "my_material" 0.9
-material change outlinewidth "my_material" 0.9 
+material change outlinewidth "my_material" 0.9
 
 
 # prepare protein
@@ -122,13 +123,15 @@ display resetview
 %(option_camera)s } 
 
 # Render
-%(option_camera)srender Tachyon %(pre_render_file)s "/usr/local/lib/vmd/tachyon_LINUX -fullshade -aasamples 12 %(pre_render_file)s -trans_vmd -rescale_lights 0.3 -add_skylight 1.0  -normalize -format PSD48 -res 1024 1024 -o %(rendered_file)s"
+ -aasamples 12 Results/CMA/BVDV/BVDV_CMA_render.dat -format PSD48 -add_skylight 1.5  -res 1024 1024 -o Results/CMA/BVDV/BVDV_CMA_render_2.
+%(option_camera)s render Tachyon %(pre_render_file)s "/usr/local/lib/vmd/tachyon_LINUX -aasamples 12 %(pre_render_file)s -add_skylight 1.5  -format PSD48 -res 1024 1024 -o %(rendered_file)s"
 
 # Load zoomed display matrices
-%(option_camera)s foreach mol [molinfo list] { 
-%(option_camera)s    molinfo $mol set {center_matrix rotate_matrix scale_matrix global_matrix} {%(camera_settings_zoomed)s}
-%(option_camera)s } 
+%(option_zoom)s foreach mol [molinfo list] { 
+%(option_zoom)s    molinfo $mol set {center_matrix rotate_matrix scale_matrix global_matrix} {%(camera_settings_zoomed)s}
+%(option_zoom)s } 
 
 # Render
-%(option_camera)srender Tachyon %(pre_render_zoom_file)s "/usr/local/lib/vmd/tachyon_LINUX -fullshade -aasamples 12 zoom_%(pre_render_zoom_file)s -trans_vmd -rescale_lights 0.3 -add_skylight 1.0  -normalize -format PSD48 -res 1024 1024 -o zoom_%(rendered_zoom_file)s"
+%(option_zoom)s render Tachyon %(pre_render_zoom_file)s "/usr/local/lib/vmd/tachyon_LINUX -aasamples 12 %(pre_render_zoom_file)s -add_skylight 1.5  -format PSD48 -res 1024 1024 -o %(rendered_zoom_file)s"
 
+exit
