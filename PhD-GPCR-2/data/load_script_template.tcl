@@ -123,7 +123,6 @@ display resetview
 %(option_camera)s } 
 
 # Render
- -aasamples 12 Results/CMA/BVDV/BVDV_CMA_render.dat -format PSD48 -add_skylight 1.5  -res 1024 1024 -o Results/CMA/BVDV/BVDV_CMA_render_2.
 %(option_camera)s render Tachyon %(pre_render_file)s "/usr/local/lib/vmd/tachyon_LINUX -aasamples 12 %(pre_render_file)s -add_skylight 1.5  -format PSD48 -res 1024 1024 -o %(rendered_file)s"
 
 # Load zoomed display matrices
