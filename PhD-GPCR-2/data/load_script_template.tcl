@@ -130,5 +130,5 @@ display resetview
 %(option_camera)s } 
 
 # Render
-%(option_camera)srender Tachyon %(pre_render_zoom_file)s "/usr/local/lib/vmd/tachyon_LINUX -fullshade -aasamples 12 zoom_%(pre_render_zoom_file)s -trans_vmd -rescale_lights 0.3 -add_skylight 1.0  -normalize -format PSD48 -res 1024 1024 -o zoom_%(rendered_zoom_file)s"
+%(option_camera)srender Tachyon %(pre_render_zoom_file)s "/usr/local/lib/vmd/tachyon_LINUX -fullshade -aasamples 12 %(pre_render_zoom_file)s -trans_vmd -rescale_lights 0.3 -add_skylight 1.0  -normalize -format PSD48 -res 1024 1024 -o %(rendered_zoom_file)s"
 
