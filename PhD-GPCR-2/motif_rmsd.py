@@ -76,6 +76,7 @@ if __name__ == '__main__':
         axes[i/2,i%2].set_title(protein)
         plt.setp( axes[i/2,i%2].xaxis.get_majorticklabels(), rotation = 45 )
     scale_axes_to_max_val(axes, 3, 2)
-    plt.show()
+    f.suptitle("Trajectory RMSD per motif")
+    plt.savefig(os.path.join(options.results,"motif_rmsd.svg"))
             
                 

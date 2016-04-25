@@ -29,8 +29,20 @@ set my_color [expr $my_color + 1]
                                                        }) 
     return "".join(motif_code_strings)
 
-def gen_arrows_vmd_file(options):
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option("-i", dest="input")
+    parser.add_option("--arrows", dest="arrows")
+    parser.add_option("--motifs", dest="motifs")
+    parser.add_option("--camera", dest="camera")
+    (options, args) = parser.parse_args()
     
+    if options.input is None:
+        parser.error('Input file is needed. Line format: "protein_name drug_name clusters_folder"')
+    
+    if options.motifs is None:
+        parser.error('You must specify the motifs file')
+
     # arrow selections
     if options.arrows is not None:
         arrows = defaultdict(dict)
@@ -38,10 +50,35 @@ def gen_arrows_vmd_file(options):
             parts = line.split(",")
             arrows[parts[0]]["begin"] = parts[1]
             arrows[parts[0]]["end"] = parts[2]
-            
-            
+    
+    # motifs
+    motifs = defaultdict(dict)
+    for line in open(options.motifs):
+        if line[0]!= "#":
+            parts = [ s.strip() for s in line.split(",")]
+            motifs[parts[0]][parts[1]] = parts[2]
+    # prepare motif colors
+    motif_colors = {}
+    start = 0.1 ; end = 0.9
+    for c, motif_id in zip(numpy.arange(start, end+0.01, (end - start) / len(motifs)),motifs[motifs.keys()[0]].keys()):
+        motif_colors[motif_id] = c
+    
+    # camera setups
+    if options.camera is not None:
+        camera = {}
+        for line in open(options.camera):
+            if line[0] != "#":
+                parts = [ s.strip() for s in line.split(":")]
+                # general and zoomed
+                camera[parts[0]]=(parts[1], parts[2])
+    
+    # load colors per cluster
+    #colors = [(1.,0.,0.), (0.,1.,0.), (0.,0.,1.)]*10
+    import seaborn as sns
+    colors = sns.hls_palette(15, l=.3, s=.8)
+    
     # VMD execution template
-    template = open("/home/victor/git/PhD-GPCR/PhD-GPCR-2/data/load_script_arrows.tcl").read()
+    template = open("/home/victor/git/PhD-GPCR/PhD-GPCR-2/data/load_script_template.tcl").read()
     
     for line in open(options.input):
         protein, drug, folder = line.strip().split()
@@ -104,52 +141,3 @@ def gen_arrows_vmd_file(options):
         vmd_vis_filename = os.path.join(folder,"vmd_vis")
         open(vmd_vis_filename,"w").write(vmd_file_contents)
         print vmd_vis_filename
-        
-def gen_balls_vmd_file(options):
-    pass
-
-def gen_representatives_vmd_file(options):
-    pass
-
-
-if __name__ == '__main__':
-    parser = OptionParser()
-    parser.add_option("-i", dest="input")
-    parser.add_option("--arrows", dest="arrows")
-    parser.add_option("--motifs", dest="motifs")
-    parser.add_option("--camera", dest="camera")
-    (options, args) = parser.parse_args()
-    
-    if options.input is None:
-        parser.error('Input file is needed. Line format: "protein_name drug_name clusters_folder"')
-    
-    if options.motifs is None:
-        parser.error('You must specify the motifs file')
-
-    # motifs
-    motifs = defaultdict(dict)
-    for line in open(options.motifs):
-        if line[0]!= "#":
-            parts = [ s.strip() for s in line.split(",")]
-            motifs[parts[0]][parts[1]] = parts[2]
-    # prepare motif colors
-    motif_colors = {}
-    start = 0.1 ; end = 0.9
-    for c, motif_id in zip(numpy.arange(start, end+0.01, (end - start) / len(motifs)),motifs[motifs.keys()[0]].keys()):
-        motif_colors[motif_id] = c
-    
-    # camera setups
-    if options.camera is not None:
-        camera = {}
-        for line in open(options.camera):
-            if line[0] != "#":
-                parts = [ s.strip() for s in line.split(":")]
-                # general and zoomed
-                camera[parts[0]]=(parts[1], parts[2])
-    
-    # load colors per cluster
-    #colors = [(1.,0.,0.), (0.,1.,0.), (0.,0.,1.)]*10
-    import seaborn as sns
-    colors = sns.hls_palette(15, l=.3, s=.8)
-    
-    
