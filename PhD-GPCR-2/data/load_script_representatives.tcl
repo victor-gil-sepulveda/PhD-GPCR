@@ -14,38 +14,61 @@ material change outlinewidth "my_material" 0.9
 
 
 # prepare protein
-set current [mol load pdb "%(main_structure)s"]
-mol rename top "%(main_structure)s"
+set protein [mol load pdb "%(protein_structure)s"]
+mol rename top "%(protein)s"
 
-set nframes [molinfo top get numframes] 
+mol color Name
+mol representation NewCartoon 0.300000 12.000000 4.500000 0
+mol selection all
+mol material Opaque
+mol addrep $protein
 
-# For each frame
+# Load ligands
+set ligands [mol load pdb "%(ligand_structures)s"]
+mol rename top "%(drug)s"
+
+# To get the colors
+set fp [open "%(cluster_lst)s" r]
+set file_data [read $fp]
+set data [split $file_data "\n"]
+
+# For each frame (each color)
+set i 0
+mol delrep 0 $protein
+mol delrep 0 $ligands
+foreach line $data {
+    split $line " "
+    set file_color [split $line " "]
+    	
 	# Get a unique color from the file
-	set r [lindex $file_color 1]
-	set g [lindex $file_color 2]
-	set b [lindex $file_color 3]
+	set r [lindex $file_color 0]
+	set g [lindex $file_color 1]
+	set b [lindex $file_color 2]
 	
-	#Set colors starting from 17 (current starts in 1)
-	set my_color [expr $current + 17]
+	#Set colors starting from 17 (current starts in 0)
+	set my_color [expr $i + 18]
+	puts "COLOR $r $g $b";
 	color change rgb $my_color $r $g $b
-	graphics $current color $my_color
-	graphics $current materials on
-	graphics $current material "my_material"
+	graphics $ligands color $my_color
+	graphics $ligands materials on
+	graphics $ligands material "my_material"
 	
 	mol selection "resname %(drug)s and noh"
 	mol representation Licorice 0.300000 12.000000 12.000000
 	mol color ColorId $my_color
-	set rep_id [mol addrep $current]
+	mol addrep $ligands
+	#puts "REP ID $rep_id";
+	mol drawframes $ligands $i $i
 
-	mol drawframes top $rep_id $frame_index
+	incr i
+}
+close $fp
 
 color change rgb white
 
 mol top 0
 set current 0
 
-# Hide full prot
-mol showrep $current 0 off
 mol color ColorId 3
 
 # show motifs
@@ -76,6 +99,7 @@ display resetview
 %(option_zoom)s } 
 
 # Render
+
 %(option_zoom)s render Tachyon %(pre_render_zoom_file)s "/usr/local/lib/vmd/tachyon_LINUX -aasamples 12 %(pre_render_zoom_file)s -add_skylight 1.5  -format PSD48 -res 1024 1024 -o %(rendered_zoom_file)s"
 
 exit

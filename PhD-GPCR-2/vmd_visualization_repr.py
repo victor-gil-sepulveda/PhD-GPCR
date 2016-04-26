@@ -8,11 +8,13 @@ from optparse import OptionParser
 import glob
 import os
 import numpy
+from pyproct.tools.scriptTools import create_directory
+from prody.proteins.pdbfile import parsePDB, writePDB
 
 def gen_motifs_code(motifs, motif_colors, draw_text):
     motif_code_strings = [] 
     motif_code_template = """mol selection "%(motif_selection)s"
-mol representation NewCartoon 0.300000 12.000000 4.500000 0
+mol representation NewCartoon 0.350000 12.000000 4.500000 0
 color change rgb $my_color %(motif_color)s %(motif_color)s %(motif_color)s 
 mol color ColorId $my_color
 mol material "my_material"
@@ -32,9 +34,11 @@ set my_color [expr $my_color + 1]
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-i", dest="input")
-    parser.add_option("--arrows", dest="arrows")
+    parser.add_option("-o", dest="output_folder")
+    
     parser.add_option("--motifs", dest="motifs")
     parser.add_option("--camera", dest="camera")
+    parser.add_option("-z", action="store_true", default = False, dest="do_zoom")
     (options, args) = parser.parse_args()
     
     if options.input is None:
@@ -43,20 +47,13 @@ if __name__ == '__main__':
     if options.motifs is None:
         parser.error('You must specify the motifs file')
 
-    # arrow selections
-    if options.arrows is not None:
-        arrows = defaultdict(dict)
-        for line in open(options.arrows):
-            parts = line.split(",")
-            arrows[parts[0]]["begin"] = parts[1]
-            arrows[parts[0]]["end"] = parts[2]
-    
     # motifs
     motifs = defaultdict(dict)
     for line in open(options.motifs):
         if line[0]!= "#":
             parts = [ s.strip() for s in line.split(",")]
             motifs[parts[0]][parts[1]] = parts[2]
+    
     # prepare motif colors
     motif_colors = {}
     start = 0.1 ; end = 0.9
@@ -78,56 +75,54 @@ if __name__ == '__main__':
     colors = sns.hls_palette(15, l=.3, s=.8)
     
     # VMD execution template
-    template = open("/home/victor/git/PhD-GPCR/PhD-GPCR-2/data/load_script_template.tcl").read()
+    template = open("/home/victor/git/PhD-GPCR/PhD-GPCR-2/data/load_script_representatives.tcl").read()
     
     for line in open(options.input):
         protein, drug, folder = line.strip().split()
 
         # sorted clusters and same color generation always make the same cluster_id, color pair
-        cluster_files = sorted(glob.glob(os.path.join(folder, "ligand_cluster_*.pdb")))
-        clusters_filename = os.path.join(folder, "clusters.lst")
-        clusters_file = open(clusters_filename, "w")
-        for i, cf in enumerate(sorted(cluster_files)):
-            clusters_file.write("%s %.2f %.2f %.2f%s"%(cf, 
-                                                       colors[i][0],
+        representatives_file = os.path.join(folder, "representatives.pdb")
+        
+        output_folder = os.path.join(options.output_folder, drug, protein)
+        create_directory(output_folder)
+        
+        pdb = parsePDB(representatives_file)
+        writePDB(os.path.join(output_folder,"protein.pdb"), pdb.select("protein"), csets = [0])
+        writePDB(os.path.join(output_folder,"ligands.pdb"), pdb.select("resname %s"%drug))
+        
+        num_clusters = pdb.numCoordsets()
+        clusters_file = open(os.path.join(output_folder,"cluster_colors"), "w")
+        for i in range(num_clusters):
+            clusters_file.write("%.2f %.2f %.2f%s"%(   colors[i][0],
                                                        colors[i][1],
                                                        colors[i][2],
-                                ("\n" if i <(len(cluster_files)-1) else "")))
+                                ("\n" if i <(num_clusters-1) else "")))
         clusters_file.close()
-        
-        if options.arrows is not None:
-            option_arrow = ""
-            option_drug = "#"
-            arrow_begin = arrows[drug]["begin"]
-            arrow_end = arrows[drug]["end"]
-        else:
-            option_arrow = "#"
-            option_drug = ""
-            arrow_begin = ""
-            arrow_end = ""
         
         camera_settings = ""; camera_settings_zoomed = ""; option_camera = "#"; pre_render_file = ""; rendered_file = ""; option_zoom = "#"
         if options.camera is not None:
             camera_settings = camera[protein][0]
             camera_settings_zoomed = camera[protein][1]
             option_camera = "" 
-            pre_render_file = os.path.join(folder,"%s_%s_render.dat"%(protein, drug))
-            rendered_file = os.path.join(folder,"%s_%s_render.psd"%(protein, drug))
-            pre_render_zoom_file = os.path.join(folder,"%s_%s_zoom_render.dat"%(protein, drug))
-            rendered_zoom_file = os.path.join(folder,"%s_%s_zoom_render.psd"%(protein, drug))
+            pre_render_file = os.path.join(options.output_folder, drug, protein, "%s_%s_render.dat"%(protein, drug))
+            rendered_file = os.path.join(options.output_folder, drug, protein, "%s_%s_render.psd"%(protein, drug))
+            pre_render_zoom_file = os.path.join(options.output_folder, drug, protein, "%s_%s_zoom_render.dat"%(protein, drug))
+            rendered_zoom_file = os.path.join(options.output_folder, drug, protein, "%s_%s_zoom_render.psd"%(protein, drug))
             option_zoom = ""
-        #OVERRIDE OPTION ZOOM
-        option_zoom = "#"
         
-        vmd_file_contents = template%{"cluster_lst": clusters_filename, 
-                                      "main_structure":os.path.join(folder,"%s.pdb"%protein),
-                                      "arrow_begin_selection": arrow_begin,
-                                      "arrow_end_selection": arrow_end,
+        
+        if not options.do_zoom:
+            option_zoom = "#"
+        else:
+            option_zoom = ""
+        
+        vmd_file_contents = template%{"cluster_lst": os.path.join(output_folder,"cluster_colors"), 
+                                      "protein_structure":os.path.join(output_folder,"protein.pdb"),
+                                      "ligand_structures":os.path.join(output_folder,"ligands.pdb"),
                                       "motifs_code": gen_motifs_code(motifs[protein], motif_colors, False),
                                       "viewpoint_values": "",
+                                      "protein": protein,
                                       "drug": drug,
-                                      "option_arrow": option_arrow,
-                                      "option_drug": option_drug,
                                       "camera_settings":camera_settings,
                                       "camera_settings_zoomed": camera_settings_zoomed,
                                       "option_camera": option_camera,
@@ -138,6 +133,6 @@ if __name__ == '__main__':
                                       "option_zoom": option_zoom
         }
             
-        vmd_vis_filename = os.path.join(folder,"vmd_vis")
+        vmd_vis_filename = os.path.join(output_folder,"vmd_vis")
         open(vmd_vis_filename,"w").write(vmd_file_contents)
         print vmd_vis_filename
